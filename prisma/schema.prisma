@@ -1,0 +1,117 @@
+// prisma/schema.prisma —— 数据库"设计图纸"
+// 这里定义了所有"表格"的结构：新闻、词汇、用户、阅读记录等
+// Prisma 会根据这个文件自动生成 TypeScript 类型和数据库操作代码
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== 用户与认证 ====================
+// NextAuth.js 需要的标准表，支持 GitHub 登录
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String        @id @default(cuid())
+  name          String?
+  email         String?       @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  vocabularies  Vocabulary[]
+  readingLogs   ReadingLog[]
+  createdAt     DateTime      @default(now())
+}
+
+// ==================== 新闻内容 ====================
+
+model News {
+  id           String        @id @default(cuid())
+  title        String
+  summary      String
+  content      String?       // 原文或摘要（iframe 失败时显示）
+  source       String        // BBC / Reuters / The Guardian
+  sourceUrl    String        // 原文链接
+  category     String        // Politics / Economy / Technology / Culture / Society
+  level        String        @default("Intermediate") // Foundation / Intermediate / Advanced
+  imageUrl     String?
+  publishedAt  DateTime
+  createdAt    DateTime      @default(now())
+  annotations  String?       // AI 学术注释 JSON（SQLite 不支持 Json 类型，用字符串存储）
+  vocabularies Vocabulary[]
+}
+
+// ==================== 词汇本系统 ====================
+
+model Vocabulary {
+  id           String      @id @default(cuid())
+  userId       String
+  newsId       String
+  word         String
+  ipa          String?     // 音标（IPA）
+  meaning      String      // 释义
+  level        String      // 专四/专八/GRE
+  context      String      // 原文例句
+  collocations String?     // 搭配用法
+  nextReview   DateTime    @default(now())
+  interval     Int         @default(0)      // SRS 间隔天数
+  easeFactor   Float       @default(2.5)   // SM-2 易度系数
+  repetitions  Int         @default(0)      // 重复次数
+  createdAt    DateTime    @default(now())
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  news         News        @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  reviewLogs   ReviewLog[]
+
+  @@unique([userId, word, newsId])
+}
+
+model ReviewLog {
+  id           String     @id @default(cuid())
+  vocabularyId String
+  quality      Int        // 0=不认识, 3=模糊, 5=认识（SM-2 标准）
+  reviewedAt   DateTime   @default(now())
+  vocabulary   Vocabulary @relation(fields: [vocabularyId], references: [id], onDelete: Cascade)
+}
+
+// ==================== 阅读记录 ====================
+
+model ReadingLog {
+  id       String   @id @default(cuid())
+  userId   String
+  newsId   String
+  readAt   DateTime @default(now())
+  duration Int?     // 阅读时长（秒）
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, newsId, readAt])
+}
