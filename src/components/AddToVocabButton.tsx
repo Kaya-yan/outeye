@@ -1,31 +1,19 @@
-// src/components/AddToVocabButton.tsx
-// 作用：精读页"加入词汇本"按钮（一键批量收藏重点词汇）
-
 'use client';
 
 import { useState } from 'react';
 import { Plus, Check, Loader2 } from 'lucide-react';
-
-// 单个词汇的数据结构
-interface VocabItem {
-  word: string;
-  ipa?: string;
-  meaning?: string;
-  level?: string;
-  context?: string;
-  collocations?: string;
-}
+import { showToast } from './Toast';
+import { VocabInput } from '@/types';
 
 interface Props {
   newsId: string;
-  vocabList: VocabItem[];
+  vocabList: VocabInput[];
 }
 
 export default function AddToVocabButton({ newsId, vocabList }: Props) {
   const [added, setAdded] = useState(false);
   const [adding, setAdding] = useState(false);
 
-  // 点击后批量添加
   const handleAdd = async () => {
     if (added || adding || vocabList.length === 0) return;
     setAdding(true);
@@ -50,7 +38,7 @@ export default function AddToVocabButton({ newsId, vocabList }: Props) {
         });
 
         if (res.ok) successCount++;
-        else if (res.status === 409) duplicateCount++; // 已存在
+        else if (res.status === 409) duplicateCount++;
       } catch (e) {
         console.error('添加失败:', e);
       }
@@ -59,15 +47,14 @@ export default function AddToVocabButton({ newsId, vocabList }: Props) {
     setAdding(false);
     if (successCount > 0) {
       setAdded(true);
-      alert(`✅ 成功添加 ${successCount} 个词汇！${duplicateCount > 0 ? `（${duplicateCount} 个已存在）` : ''}`);
+      showToast('success', `成功添加 ${successCount} 个词汇！${duplicateCount > 0 ? `（${duplicateCount} 个已存在）` : ''}`);
     } else if (duplicateCount > 0) {
-      alert('这些词汇已在你的词汇本中');
+      showToast('info', '这些词汇已在你的词汇本中');
     } else {
-      alert('添加失败，请检查网络');
+      showToast('error', '添加失败，请检查网络');
     }
   };
 
-  // 如果没有词汇数据，不显示按钮
   if (!vocabList || vocabList.length === 0) return null;
 
   return (

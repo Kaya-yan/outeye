@@ -1,3 +1,81 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --bg-primary: #FDFBF7;
+  --bg-card: #FFFFFF;
+  --text-primary: #1A1A1A;
+  --text-secondary: #6B6B6B;
+  --border: rgba(26, 26, 26, 0.05);
+}
+
+[data-theme="dark"] {
+  --bg-primary: #1A1A2E;
+  --bg-card: #16213E;
+  --text-primary: #EAEAEA;
+  --text-secondary: #A0A0A0;
+  --border: rgba(255, 255, 255, 0.1);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+@keyframes slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.font-serif {
+  font-family: 'Playfair Display', 'LXGW WenKai', serif;
+}
+
+.font-body {
+  font-family: 'Merriweather', 'LXGW WenKai', serif;
+}
+
+.font-mono {
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.font-sans {
+  font-family: 'LXGW WenKai', system-ui, sans-serif;
+}
+
+.leading-english {
+  line-height: 1.8;
+}
+
+.leading-chinese {
+  line-height: 1.8;
+}
+
+.shadow-card {
+  box-shadow: 0 2px 8px rgba(15, 76, 129, 0.08);
+}
+
+.shadow-card-hover {
+  box-shadow: 0 8px 24px rgba(15, 76, 129, 0.15);
+}
