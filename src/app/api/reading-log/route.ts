@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { ensureDemoUser } from '@/lib/ensure-demo-user';
 
 const TEMP_USER_ID = 'demo-user';
 
@@ -11,6 +12,8 @@ export async function POST(request: Request) {
     if (!newsId) {
       return NextResponse.json({ error: '缺少 newsId' }, { status: 400 });
     }
+
+    await ensureDemoUser();
 
     const readingLog = await prisma.readingLog.create({
       data: {

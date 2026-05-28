@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { ensureDemoUser } from '@/lib/ensure-demo-user';
 
 const TEMP_USER_ID = 'demo-user';
 
@@ -37,6 +38,8 @@ export async function POST(request: Request) {
     if (!word || !newsId) {
       return NextResponse.json({ error: '缺少必要参数' }, { status: 400 });
     }
+
+    await ensureDemoUser();
 
     const existing = await prisma.vocabulary.findFirst({
       where: { userId: TEMP_USER_ID, word, newsId },
